@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build plugin zip
+        run: |
+          # WindowsGSM puzzle-button import requires the zip root to contain
+          # the plugin folder directly (Enshrouded.cs/) with no parent wrapper.
+          mkdir -p dist
+          zip -r dist/WindowsGSM.Enshrouded.zip Enshrouded.cs/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: WindowsGSM.Enshrouded ${{ github.ref_name }}
+          body: |
+            ## Installation
+            1. In WindowsGSM, click the puzzle icon (bottom-left)
+            2. Select **Install Plugin** and navigate to `WindowsGSM.Enshrouded.zip`
+            3. Click **Reload Plugins**
+            4. Install a new server: **Enshrouded Dedicated Server [Enshrouded.cs]**
+
+            ## Changes
+            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+          files: dist/WindowsGSM.Enshrouded.zip
+          draft: false
+          prerelease: false
